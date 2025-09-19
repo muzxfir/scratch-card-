@@ -1,0 +1,84 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <style>
+    body {
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      height: 100vh;
+      background: #222;
+      margin: 0;
+    }
+    canvas {
+      position: absolute;
+      top: 0;
+      left: 0;
+    }
+    #container {
+      position: relative;
+      width: 400px;
+      height: 300px;
+      overflow: hidden;
+    }
+    #hiddenImage {
+      width: 100%;
+      height: 100%;
+      object-fit: cover;
+    }
+  </style>
+</head>
+<body>
+  <div id="container">
+    <img id="hiddenImage" src="https://files.catbox.moe/86skry.png" />
+    <canvas id="scratchCanvas"></canvas>
+  </div>
+
+  <script>
+    const canvas = document.getElementById('scratchCanvas');
+    const ctx = canvas.getContext('2d');
+    const container = document.getElementById('container');
+
+    canvas.width = container.offsetWidth;
+    canvas.height = container.offsetHeight;
+
+    // Cover image
+    const coverImage = new Image();
+    coverImage.src = "https://files.catbox.moe/pgp7mb.jpg";
+    coverImage.onload = () => {
+      ctx.drawImage(coverImage, 0, 0, canvas.width, canvas.height);
+    };
+
+    let scratching = false;
+
+    function getPos(e) {
+      const rect = canvas.getBoundingClientRect();
+      return {
+        x: (e.clientX || (e.touches && e.touches[0].clientX)) - rect.left,
+        y: (e.clientY || (e.touches && e.touches[0].clientY)) - rect.top
+      };
+    }
+
+    function scratch(e) {
+      if (!scratching) return;
+      e.preventDefault(); // ✅ Prevent window move/scroll
+
+      const pos = getPos(e);
+      ctx.globalCompositeOperation = "destination-out"; // Erase effect
+      ctx.beginPath();
+      ctx.arc(pos.x, pos.y, 20, 0, Math.PI * 2);
+      ctx.fill();
+    }
+
+    // Mouse
+    canvas.addEventListener("mousedown", (e) => { e.preventDefault(); scratching = true; });
+    canvas.addEventListener("mouseup", (e) => { e.preventDefault(); scratching = false; });
+    canvas.addEventListener("mousemove", scratch);
+
+    // Touch
+    canvas.addEventListener("touchstart", (e) => { e.preventDefault(); scratching = true; });
+    canvas.addEventListener("touchend", (e) => { e.preventDefault(); scratching = false; });
+    canvas.addEventListener("touchmove", scratch);
+  </script>
+</body>
+</html>
